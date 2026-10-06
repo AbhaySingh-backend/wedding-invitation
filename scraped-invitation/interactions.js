@@ -1,5 +1,5 @@
 (() => {
-  const invitationUrl = 'https://sadarnimantran.in/invite/arsalan-inaya';
+  const invitationUrl = 'https://sadarnimantran.in/invite/Tarique-inaya';
   const events = {
     'Manjha & Ubtan': ['20261105T063000Z', 'Kidwai Manzil, Golaganj, Lucknow', '12 pm'],
     Mehndi: ['20261106T133000Z', 'Kidwai Manzil, Golaganj, Lucknow', '7 pm'],
@@ -335,15 +335,15 @@
         const contents = [
           'BEGIN:VCALENDAR',
           'VERSION:2.0',
-          'PRODID:-//Wedding Invitation//Arsalan and Inaya//EN',
+          'PRODID:-//Wedding Invitation//Tarique and Inaya//EN',
           'CALSCALE:GREGORIAN',
           'BEGIN:VEVENT',
-          `UID:${title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-2026@arsalan-inaya`,
+          `UID:${title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-2026@Tarique-inaya`,
           `DTSTAMP:${new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '')}`,
           `DTSTART:${start}`,
           `DTEND:${end}`,
-          `SUMMARY:${escapeIcs(`${title} - Arsalan and Inaya`)}`,
-          `DESCRIPTION:${escapeIcs(`${time}. Arsalan weds Inaya.`)}`,
+          `SUMMARY:${escapeIcs(`${title} - Tarique and Inaya`)}`,
+          `DESCRIPTION:${escapeIcs(`${time}. Tarique weds Inaya.`)}`,
           `LOCATION:${escapeIcs(location)}`,
           'END:VEVENT',
           'END:VCALENDAR',
@@ -351,7 +351,7 @@
         const file = URL.createObjectURL(new Blob([contents], { type: 'text/calendar;charset=utf-8' }));
         const download = document.createElement('a');
         download.href = file;
-        download.download = `${title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-arsalan-inaya.ics`;
+        download.download = `${title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-Tarique-inaya.ics`;
         download.click();
         setTimeout(() => URL.revokeObjectURL(file), 60000);
         announce(`${title} added to your calendar download.`);
@@ -368,7 +368,7 @@
         const attending = replyForm.querySelector('[data-rsvp="yes"]:checked');
         const notAttending = replyForm.querySelector('[data-rsvp="no"]:checked');
         const message = [
-          'Namaste! Reply for Arsalan weds Inaya.',
+          'Namaste! Reply for Tarique weds Inaya.',
           `Name: ${guestName}`,
           attending ? "Attendance: Yes, we'll be there." : notAttending ? "Attendance: Sorry, can't make it." : '',
           note?.value.trim() ? `Note: ${note.value.trim()}` : '',
@@ -408,7 +408,7 @@
     const share = [...document.querySelectorAll('button')].find((button) => button.textContent.trim() === 'Share');
     if (share) {
       share.addEventListener('click', async () => {
-        const data = { title: 'Arsalan weds Inaya', text: 'You are warmly invited to Arsalan and Inaya’s Nikah.', url: invitationUrl };
+        const data = { title: 'Tarique weds Inaya', text: 'You are warmly invited to Tarique and Inaya’s Nikah.', url: invitationUrl };
         if (navigator.share) {
           try {
             await navigator.share(data);
@@ -429,7 +429,7 @@
     const tryNames = [...document.querySelectorAll('button')].find((button) => button.textContent.trim() === 'Try with your names');
     if (tryNames) {
       tryNames.addEventListener('click', () => {
-        window.open('https://sadarnimantran.in/start?design=arsalan-inaya', '_blank', 'noopener,noreferrer');
+        window.open('https://sadarnimantran.in/start?design=Tarique-inaya', '_blank', 'noopener,noreferrer');
       });
     }
 
