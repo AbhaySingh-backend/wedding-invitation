@@ -358,35 +358,49 @@
       });
     });
 
-    const name = document.querySelector('#rsvp input[type="text"]');
-    const note = document.querySelector('#rsvp textarea');
     const reply = document.querySelector('#rsvp a[data-rsvp="send"]');
-    if (reply && name) {
+    const replyForm = reply?.closest('form');
+    const name = replyForm?.querySelector('input[type="text"]');
+    const note = replyForm?.querySelector('textarea');
+    if (reply && replyForm && name) {
       const updateReply = () => {
         const guestName = name.value.trim();
-        const attending = document.querySelector('#rsvp [data-rsvp="yes"]:checked');
-        const notAttending = document.querySelector('#rsvp [data-rsvp="no"]:checked');
+        const attending = replyForm.querySelector('[data-rsvp="yes"]:checked');
+        const notAttending = replyForm.querySelector('[data-rsvp="no"]:checked');
         const message = [
           'Namaste! Reply for Arsalan weds Inaya.',
           `Name: ${guestName}`,
           attending ? "Attendance: Yes, we'll be there." : notAttending ? "Attendance: Sorry, can't make it." : '',
           note?.value.trim() ? `Note: ${note.value.trim()}` : '',
         ].filter(Boolean).join('\n');
-        reply.href = `https://wa.me/919411955202?text=${encodeURIComponent(message)}`;
+        const whatsappUrl = new URL('https://wa.me/919411955202');
+        whatsappUrl.searchParams.set('text', message);
+        reply.href = whatsappUrl.href;
       };
-      [name, note, ...document.querySelectorAll('#rsvp input[type="radio"]')]
+      [name, note, ...replyForm.querySelectorAll('input[type="radio"]')]
         .filter(Boolean)
-        .forEach((field) => field.addEventListener('input', updateReply));
-      reply.addEventListener('click', (event) => {
+        .forEach((field) => {
+          field.addEventListener('input', updateReply);
+          field.addEventListener('change', updateReply);
+        });
+      const validateReply = (event) => {
         if (!name.value.trim()) {
           event.preventDefault();
           name.focus();
           name.setAttribute('aria-invalid', 'true');
           announce('Enter your name before sending your reply.');
-          return;
+          return false;
         }
         name.removeAttribute('aria-invalid');
         updateReply();
+        return true;
+      };
+      reply.addEventListener('click', validateReply);
+      replyForm.addEventListener('submit', (event) => {
+        event.preventDefault();
+        if (validateReply(event)) {
+          window.open(reply.href, '_blank', 'noopener,noreferrer');
+        }
       });
       updateReply();
     }
