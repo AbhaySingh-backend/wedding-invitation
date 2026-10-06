@@ -221,6 +221,11 @@
 
     document.querySelector('a[aria-label*="See all samples"]')?.closest('aside')?.remove();
     document.querySelector('#closing a[href*="/start?design="]')?.parentElement.remove();
+    const closing = document.querySelector('#closing');
+    const attribution = closing?.querySelector('a[aria-label^="Invitation by"]');
+    if (closing && attribution) {
+      closing.style.paddingBottom = 'calc(8rem + env(safe-area-inset-bottom))';
+    }
 
     const mapLinks = document.querySelectorAll('a[href^="/"]');
     mapLinks.forEach((link) => {
@@ -343,21 +348,51 @@
 
     const countdown = document.getElementById('countdown');
     if (countdown) {
-      const panel = document.createElement('p');
-      panel.setAttribute('aria-live', 'off');
-      panel.style.cssText = 'margin:1rem auto 0;text-align:center;font-variant-numeric:tabular-nums';
-      countdown.append(panel);
+      countdown.querySelectorAll(':scope > p').forEach((paragraph) => {
+        if (paragraph.textContent.includes('days') && paragraph.textContent.includes('seconds')) {
+          paragraph.remove();
+        }
+      });
+      const units = ['days', 'hours', 'minutes', 'seconds'];
+      const cards = units.map((unit) => {
+        const label = [...countdown.querySelectorAll('span.t-label')]
+          .find((element) => element.textContent.trim() === unit);
+        if (!label) return null;
+        const card = label.parentElement;
+        return {
+          value: card.querySelector('.sr-only'),
+          display: card.querySelector('[aria-hidden="true"].i-display'),
+        };
+      });
       const updateCountdown = () => {
         const remaining = new Date('2026-11-07T19:30:00+05:30').getTime() - Date.now();
-        if (remaining <= 0) {
-          panel.textContent = 'The Nikah day is here.';
-          return;
-        }
-        const days = Math.floor(remaining / 86400000);
-        const hours = Math.floor((remaining % 86400000) / 3600000);
-        const minutes = Math.floor((remaining % 3600000) / 60000);
-        const seconds = Math.floor((remaining % 60000) / 1000);
-        panel.textContent = `${days} days · ${hours} hours · ${minutes} minutes · ${seconds} seconds`;
+        const totalSeconds = Math.max(0, Math.floor(remaining / 1000));
+        const values = [
+          Math.floor(totalSeconds / 86400),
+          Math.floor((totalSeconds % 86400) / 3600),
+          Math.floor((totalSeconds % 3600) / 60),
+          totalSeconds % 60,
+        ];
+        values.forEach((value, index) => {
+          const card = cards[index];
+          if (!card?.value || !card.display) return;
+          const digits = String(value).padStart(2, '0');
+          card.value.textContent = String(value);
+          const cells = [...card.display.children];
+          if (cells.length !== digits.length) {
+            card.display.replaceChildren(...[...digits].map(() => {
+              const cell = document.createElement('span');
+              cell.className = 'relative inline-block w-[1ch] text-center';
+              return cell;
+            }));
+          }
+          [...card.display.children].forEach((cell, digitIndex) => {
+            const digit = document.createElement('span');
+            digit.className = 'block';
+            digit.textContent = digits[digitIndex];
+            cell.replaceChildren(digit);
+          });
+        });
       };
       updateCountdown();
       setInterval(updateCountdown, 1000);
