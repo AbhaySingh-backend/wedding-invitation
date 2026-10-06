@@ -1,5 +1,8 @@
 # Local invitation
 
+The published invitation is available at
+<https://abhaysingh-backend.github.io/wedding-invitation/>.
+
 Run `node serve.mjs` from this folder, then open <http://127.0.0.1:4173/>.
 The local server serves the saved page and restores interactions that do not
 work when the HTML is opened directly as a `file://` URL.
