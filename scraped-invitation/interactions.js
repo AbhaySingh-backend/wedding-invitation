@@ -1,9 +1,9 @@
 (() => {
-  const invitationUrl = 'https://sadarnimantran.in/invite/Tarique-inaya';
+  const invitationUrl = 'https://sadarnimantran.in/invite/Tarique-Afreen';
   const events = {
-    'Manjha & Ubtan': ['20261105T063000Z', 'Kidwai Manzil, Golaganj, Lucknow', '12 pm'],
-    Mehndi: ['20261106T133000Z', 'Kidwai Manzil, Golaganj, Lucknow', '7 pm'],
-    Nikah: ['20261107T140000Z', 'Kothi Sitara Bagh, Kaiserbagh, Lucknow', '7:30 pm'],
+    'Manjha & Ubtan': ['20261105T063000Z', ' Khan Manzil,  Khalilabad', '12 pm'],
+    Mehndi: ['20261106T133000Z', ' Khan Manzil,  Khalilabad', '7 pm'],
+    WALIMA: ['20261107T140000Z', 'Kothi Sitara Bagh, Kaiserbagh, Lucknow', '7:30 pm'],
     Walima: ['20261108T143000Z', 'Kothi Sitara Bagh, Kaiserbagh, Lucknow', '8 pm'],
   };
 
@@ -253,6 +253,8 @@
       if (event.key === 'Escape') closeCover();
     });
 
+    document.getElementById('rsvp')?.remove();
+
     const dock = document.createElement('nav');
     dock.setAttribute('aria-label', 'Invitation shortcuts');
     Object.assign(dock.style, {
@@ -295,7 +297,6 @@
     }
 
     dock.append(
-      dockButton('Reply', () => openSection('rsvp')),
       dockButton('Dates', () => openSection('events')),
       dockButton('Map', () => openSection('venue')),
       dockButton('Music', () => announce('This sample invitation has no music track.')),
@@ -335,15 +336,15 @@
         const contents = [
           'BEGIN:VCALENDAR',
           'VERSION:2.0',
-          'PRODID:-//Wedding Invitation//Tarique and Inaya//EN',
+          'PRODID:-//Wedding Invitation//Tarique and Afreen//EN',
           'CALSCALE:GREGORIAN',
           'BEGIN:VEVENT',
-          `UID:${title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-2026@Tarique-inaya`,
+          `UID:${title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-2026@Tarique-Afreen`,
           `DTSTAMP:${new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '')}`,
           `DTSTART:${start}`,
           `DTEND:${end}`,
-          `SUMMARY:${escapeIcs(`${title} - Tarique and Inaya`)}`,
-          `DESCRIPTION:${escapeIcs(`${time}. Tarique weds Inaya.`)}`,
+          `SUMMARY:${escapeIcs(`${title} - Tarique and Afreen`)}`,
+          `DESCRIPTION:${escapeIcs(`${time}. Tarique weds Afreen.`)}`,
           `LOCATION:${escapeIcs(location)}`,
           'END:VEVENT',
           'END:VCALENDAR',
@@ -351,64 +352,17 @@
         const file = URL.createObjectURL(new Blob([contents], { type: 'text/calendar;charset=utf-8' }));
         const download = document.createElement('a');
         download.href = file;
-        download.download = `${title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-Tarique-inaya.ics`;
+        download.download = `${title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-Tarique-Afreen.ics`;
         download.click();
         setTimeout(() => URL.revokeObjectURL(file), 60000);
         announce(`${title} added to your calendar download.`);
       });
     });
 
-    const reply = document.querySelector('#rsvp a[data-rsvp="send"]');
-    const replyForm = reply?.closest('form');
-    const name = replyForm?.querySelector('input[type="text"]');
-    const note = replyForm?.querySelector('textarea');
-    if (reply && replyForm && name) {
-      const updateReply = () => {
-        const guestName = name.value.trim();
-        const attending = replyForm.querySelector('[data-rsvp="yes"]:checked');
-        const notAttending = replyForm.querySelector('[data-rsvp="no"]:checked');
-        const message = [
-          'Namaste! Reply for Tarique weds Inaya.',
-          `Name: ${guestName}`,
-          attending ? "Attendance: Yes, we'll be there." : notAttending ? "Attendance: Sorry, can't make it." : '',
-          note?.value.trim() ? `Note: ${note.value.trim()}` : '',
-        ].filter(Boolean).join('\n');
-        const whatsappUrl = new URL('https://wa.me/919411955202');
-        whatsappUrl.searchParams.set('text', message);
-        reply.href = whatsappUrl.href;
-      };
-      [name, note, ...replyForm.querySelectorAll('input[type="radio"]')]
-        .filter(Boolean)
-        .forEach((field) => {
-          field.addEventListener('input', updateReply);
-          field.addEventListener('change', updateReply);
-        });
-      const validateReply = (event) => {
-        if (!name.value.trim()) {
-          event.preventDefault();
-          name.focus();
-          name.setAttribute('aria-invalid', 'true');
-          announce('Enter your name before sending your reply.');
-          return false;
-        }
-        name.removeAttribute('aria-invalid');
-        updateReply();
-        return true;
-      };
-      reply.addEventListener('click', validateReply);
-      replyForm.addEventListener('submit', (event) => {
-        event.preventDefault();
-        if (validateReply(event)) {
-          window.open(reply.href, '_blank', 'noopener,noreferrer');
-        }
-      });
-      updateReply();
-    }
-
     const share = [...document.querySelectorAll('button')].find((button) => button.textContent.trim() === 'Share');
     if (share) {
       share.addEventListener('click', async () => {
-        const data = { title: 'Tarique weds Inaya', text: 'You are warmly invited to Tarique and Inaya’s Nikah.', url: invitationUrl };
+        const data = { title: 'Tarique weds Afreen', text: 'You are warmly invited to Tarique and Afreen’s WALIMA.', url: invitationUrl };
         if (navigator.share) {
           try {
             await navigator.share(data);
@@ -429,7 +383,7 @@
     const tryNames = [...document.querySelectorAll('button')].find((button) => button.textContent.trim() === 'Try with your names');
     if (tryNames) {
       tryNames.addEventListener('click', () => {
-        window.open('https://sadarnimantran.in/start?design=Tarique-inaya', '_blank', 'noopener,noreferrer');
+        window.open('https://sadarnimantran.in/start?design=Tarique-Afreen', '_blank', 'noopener,noreferrer');
       });
     }
 
