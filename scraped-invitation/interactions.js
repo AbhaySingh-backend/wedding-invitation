@@ -48,6 +48,153 @@
       section.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 
+    function activateInvitationScene() {
+      document.querySelector('#top .nr')?.parentElement.setAttribute('data-active', 'true');
+    }
+
+    function launchFlowerBurst() {
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches || typeof Path2D === 'undefined') return;
+
+      const canvas = document.createElement('canvas');
+      canvas.setAttribute('aria-hidden', 'true');
+      Object.assign(canvas.style, {
+        height: '100%',
+        inset: '0',
+        pointerEvents: 'none',
+        position: 'fixed',
+        width: '100%',
+        zIndex: '60',
+      });
+      document.body.append(canvas);
+
+      const context = canvas.getContext('2d');
+      if (!context) {
+        canvas.remove();
+        return;
+      }
+
+      const paths = [
+        (() => {
+          const path = new Path2D();
+          path.moveTo(0, 1);
+          path.bezierCurveTo(0.5, 0.62, 0.66, -0.4, 0.46, -0.94);
+          path.lineTo(0.22, -0.74);
+          path.lineTo(0, -1);
+          path.lineTo(-0.22, -0.74);
+          path.lineTo(-0.46, -0.94);
+          path.bezierCurveTo(-0.66, -0.4, -0.5, 0.62, 0, 1);
+          path.closePath();
+          return path;
+        })(),
+        (() => {
+          const path = new Path2D();
+          path.moveTo(0, 1);
+          path.bezierCurveTo(0.9, 0.7, 1.08, -0.3, 0.56, -0.86);
+          path.bezierCurveTo(0.36, -1.04, 0.12, -0.96, 0, -0.7);
+          path.bezierCurveTo(-0.12, -0.96, -0.36, -1.04, -0.56, -0.86);
+          path.bezierCurveTo(-1.08, -0.3, -0.9, 0.7, 0, 1);
+          path.closePath();
+          return path;
+        })(),
+      ];
+      const colors = ['#a8445a', '#d28b9c', '#c19a4b', '#e5c16b', '#f6eedb'];
+      const randomBetween = (min, max) => min + Math.random() * (max - min);
+      const width = window.innerWidth;
+      const height = window.innerHeight;
+      const pixelRatio = Math.min(window.devicePixelRatio || 1, 2);
+      const scale = Math.min(1.4, Math.max(0.85, Math.sqrt(width * height) / 600));
+      canvas.width = Math.max(1, Math.round(width * pixelRatio));
+      canvas.height = Math.max(1, Math.round(height * pixelRatio));
+      context.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
+
+      const particles = Array.from({ length: 53 }, () => {
+        const angle = randomBetween(-1.15, 1.15);
+        const speed = height * randomBetween(0.3, 0.78);
+        const isMarigold = Math.random() < 0.6;
+        return {
+          color: colors[Math.floor(Math.random() * colors.length)],
+          fadeOut: 0.6,
+          gravity: height * 0.4,
+          life: -randomBetween(0, 0.25),
+          maxLife: 10,
+          rotation: randomBetween(0, Math.PI * 2),
+          rotationSpeed: randomBetween(0.5, 2.2) * (Math.random() < 0.5 ? -1 : 1),
+          shape: isMarigold ? 0 : 1,
+          size: randomBetween(isMarigold ? 6 : 5.5, isMarigold ? 9.5 : 8.5) * scale,
+          swayAmplitude: randomBetween(18, 52),
+          swayFrequency: randomBetween(1.1, 2.4),
+          phase: randomBetween(0, Math.PI * 2),
+          x: width * 0.5 + randomBetween(-14, 14),
+          y: height * 0.2 + randomBetween(-8, 8),
+          vx: Math.sin(angle) * speed * Math.min(1, width / height * 1.15),
+          vy: -Math.cos(angle) * speed,
+          flip: randomBetween(1.4, 3.8),
+          flipSpeed: randomBetween(1.4, 3.8),
+        };
+      });
+      let previousTime = performance.now();
+
+      function draw(time) {
+        const elapsed = Math.min(0.05, Math.max(0, (time - previousTime) / 1000));
+        previousTime = time;
+        context.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
+        context.clearRect(0, 0, width, height);
+        let active = false;
+
+        particles.forEach((particle) => {
+          particle.life += elapsed;
+          if (particle.life < 0) {
+            active = true;
+            return;
+          }
+          if (
+            particle.life >= particle.maxLife ||
+            particle.y > height + 40 ||
+            particle.y < -height * 0.6 ||
+            particle.x < -60 ||
+            particle.x > width + 60
+          ) return;
+
+          active = true;
+          const drag = Math.max(0, 1 - 1.5 * elapsed);
+          particle.vx *= drag;
+          particle.vy = (particle.vy + particle.gravity * elapsed) * drag;
+          particle.x += (particle.vx + particle.swayAmplitude * Math.sin(particle.phase + particle.life * particle.swayFrequency)) * elapsed;
+          particle.y += particle.vy * elapsed;
+          particle.rotation += particle.rotationSpeed * elapsed;
+          particle.flip += particle.flipSpeed * elapsed;
+
+          const fade = Math.min(1, particle.life / 0.12, (particle.maxLife - particle.life) / particle.fadeOut);
+          const flip = Math.cos(particle.flip);
+          const safeFlip = Math.abs(flip) < 0.22 ? Math.sign(flip || 1) * 0.22 : flip;
+          const cosine = Math.cos(particle.rotation);
+          const sine = Math.sin(particle.rotation);
+          context.globalAlpha = Math.max(0, fade);
+          context.fillStyle = particle.color;
+          context.setTransform(
+            cosine * particle.size * pixelRatio * safeFlip,
+            sine * particle.size * pixelRatio * safeFlip,
+            -sine * particle.size * pixelRatio,
+            cosine * particle.size * pixelRatio,
+            particle.x * pixelRatio,
+            particle.y * pixelRatio,
+          );
+          context.fill(paths[particle.shape]);
+        });
+
+        context.globalAlpha = 1;
+        if (active) {
+          requestAnimationFrame(draw);
+        } else {
+          context.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
+          context.clearRect(0, 0, width, height);
+          canvas.remove();
+        }
+      }
+
+      requestAnimationFrame(draw);
+    }
+
     function closeCover() {
       const cover = document.querySelector('[data-invite-cover]') ??
         document.querySelector('[role="dialog"][aria-label="Open the invitation"]');
@@ -59,7 +206,10 @@
       document.documentElement.style.removeProperty('overflow');
       document.documentElement.style.removeProperty('overscroll-behavior');
       document.body.style.removeProperty('overflow');
-      setTimeout(() => cover.remove(), 480);
+      setTimeout(() => {
+        cover.remove();
+        activateInvitationScene();
+      }, 480);
     }
 
     let coverOpening = false;
@@ -78,6 +228,7 @@
       setTimeout(() => {
         blind.style.transition = 'transform .85s cubic-bezier(.22,1,.36,1)';
         blind.style.transform = 'translateY(-105%)';
+        setTimeout(launchFlowerBurst, 300);
         setTimeout(closeCover, 740);
       }, 140);
     }
@@ -150,73 +301,6 @@
       dockButton('Music', () => announce('This sample invitation has no music track.')),
     );
 
-    const more = document.createElement('button');
-    more.type = 'button';
-    more.textContent = 'More';
-    more.setAttribute('aria-expanded', 'false');
-    more.setAttribute('aria-controls', 'invitation-shortcuts');
-    Object.assign(more.style, {
-      background: 'transparent',
-      border: '0',
-      borderRadius: '.8rem',
-      color: '#173c32',
-      cursor: 'pointer',
-      flex: '1',
-      font: '600 .9rem/1.2 system-ui, sans-serif',
-      minHeight: '2.8rem',
-      padding: '.4rem',
-    });
-    const menu = document.createElement('div');
-    menu.id = 'invitation-shortcuts';
-    menu.style.display = 'none';
-    Object.assign(menu.style, {
-      background: '#fffdf5',
-      border: '1px solid #c9aa6a',
-      borderRadius: '1rem',
-      bottom: 'calc(4.5rem + env(safe-area-inset-bottom))',
-      boxShadow: '0 8px 28px #0b2d2633',
-      display: 'grid',
-      gap: '.25rem',
-      padding: '.5rem',
-      position: 'absolute',
-      right: '0',
-      width: '11rem',
-    });
-    [
-      ['Our story', 'story'],
-      ['Family', 'family'],
-      ['Moments', 'gallery'],
-      ['Venue', 'venue'],
-    ].forEach(([label, id]) => {
-      const link = document.createElement('button');
-      link.type = 'button';
-      link.textContent = label;
-      Object.assign(link.style, {
-        background: 'transparent',
-        border: '0',
-        borderRadius: '.6rem',
-        color: '#173c32',
-        cursor: 'pointer',
-        font: '500 .95rem/1.3 system-ui, sans-serif',
-        padding: '.65rem .75rem',
-        textAlign: 'left',
-      });
-      link.addEventListener('click', () => {
-        menu.hidden = true;
-        menu.style.display = 'none';
-        more.setAttribute('aria-expanded', 'false');
-        openSection(id);
-      });
-      menu.append(link);
-    });
-    more.addEventListener('click', (event) => {
-      event.stopPropagation();
-      const isOpen = menu.style.display !== 'none';
-      menu.style.display = isOpen ? 'none' : 'grid';
-      more.setAttribute('aria-expanded', String(!isOpen));
-    });
-    dock.append(more);
-    dock.append(menu);
     document.body.append(dock);
 
     document.querySelector('a[aria-label*="See all samples"]')?.closest('aside')?.remove();
